@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntentGuard IRPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["default_policy", "rules"],
+  "properties": {
+    "default_policy": { "type": "string", "enum": ["allow", "deny", "reject"] },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "direction", "match", "action", "logging"],
+        "properties": {
+          "rule_id": { "type": "string", "minLength": 1 },
+          "direction": { "type": "string", "enum": ["ingress", "egress", "transit"] },
+          "action": { "type": "string", "enum": ["allow", "deny", "reject"] },
+          "logging": { "type": "boolean" },
+          "match": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_cidrs", "destination_cidrs", "protocol", "ports", "connection_state"],
+            "properties": {
+              "source_cidrs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "destination_cidrs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "protocol": {
+                "anyOf": [
+                  { "type": "string", "enum": ["tcp", "udp", "icmp"] },
+                  { "type": "null" }
+                ]
+              },
+              "ports": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 65535 } },
+              "connection_state": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["new", "established", "related"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

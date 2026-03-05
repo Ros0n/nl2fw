@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntentGuard ExtractedIntent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "sources", "destinations", "services", "logging", "raw_policy", "ambiguities"],
+  "properties": {
+    "action": {
+      "anyOf": [
+        { "type": "string", "enum": ["allow", "deny", "reject"] },
+        { "type": "null" }
+      ]
+    },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "destinations": { "type": "array", "items": { "type": "string" } },
+    "services": { "type": "array", "items": { "type": "string" } },
+    "logging": { "anyOf": [{ "type": "boolean" }, { "type": "null" }] },
+    "raw_policy": { "type": "string", "minLength": 1 },
+    "ambiguities": { "type": "array", "items": { "type": "string" } }
+  }
+}
+

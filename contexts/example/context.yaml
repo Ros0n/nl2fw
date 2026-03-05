@@ -1,0 +1,39 @@
+
+
+zones:
+  - name: admin
+    cidrs: ["10.0.1.0/24"]
+  - name: eng
+    cidrs: ["10.0.2.0/24"]
+  - name: student
+    cidrs: ["10.0.3.0/24"]
+  - name: dmz
+    cidrs: ["10.0.4.0/24"]
+  - name: guest
+    cidrs: ["10.0.5.0/24"]
+
+objects:
+  - name: admin_host
+    cidrs: ["10.0.1.10/32"]
+  - name: eng_host
+    cidrs: ["10.0.2.10/32"]
+  - name: student_host
+    cidrs: ["10.0.3.10/32"]
+  - name: web_server
+    cidrs: ["10.0.4.10/32"]
+  - name: guest_host
+    cidrs: ["10.0.5.10/32"]
+
+services:
+  - name: https
+    protocol: tcp
+    ports: [443]
+  - name: ssh
+    protocol: tcp
+    ports: [22]
+  - name: http
+    protocol: tcp
+    ports: [80]
+  - name: dns
+    protocol: udp
+    ports: [53]
