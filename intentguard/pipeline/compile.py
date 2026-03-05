@@ -59,7 +59,8 @@ def compile_intentguard(
     issues = validate_policy(ir, default_deny_required=True)
     raise_on_errors(issues)
 
-    program = generate_iptables(ir)
+    # Rules-only output by default (no flush/default policies/conntrack baseline).
+    program = generate_iptables(ir, include_baseline=False, include_established_related=False)
 
     return CompileResult(
         extracted=extracted.model_dump(),

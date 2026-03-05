@@ -10,6 +10,19 @@ def flush_conntrack(node: Node) -> None:
     node.cmd("conntrack -F || true")
 
 
+def apply_firewall_baseline(node: Node) -> None:
+    """Deterministic baseline for the Mininet demo only (NOT compiler output).
+
+    Keeps IntentGuard scoped to intent->rules, while making simulation repeatable.
+    """
+    node.cmd("iptables -t filter -F")
+    node.cmd("iptables -t filter -X")
+    node.cmd("iptables -t filter -P INPUT ACCEPT")
+    node.cmd("iptables -t filter -P OUTPUT ACCEPT")
+    node.cmd("iptables -t filter -P FORWARD DROP")
+    node.cmd("iptables -t filter -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT")
+
+
 def apply_iptables_commands(node: Node, commands: Iterable[List[str]]) -> None:
     for cmd in commands:
         node.cmd(" ".join(cmd))

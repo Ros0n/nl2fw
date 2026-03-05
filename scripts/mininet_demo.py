@@ -6,6 +6,7 @@ from intentguard.context.models import load_context
 from intentguard.pipeline.compile import compile_intentguard
 from intentguard.sim.mininet.helpers import (
     apply_iptables_commands,
+    apply_firewall_baseline,
     basic_connectivity_tests,
     flush_conntrack,
     show_rules,
@@ -23,9 +24,10 @@ def main() -> None:
     net = handles.net
     net.start()
     try:
-        flush_conntrack(handles.fw)
-        apply_iptables_commands(handles.fw, result.iptables.commands)
-        print(show_rules(handles.fw))
+        flush_conntrack(handles.firewall)
+        apply_firewall_baseline(handles.firewall)
+        apply_iptables_commands(handles.firewall, result.iptables.commands)
+        print(show_rules(handles.firewall))
 
         print(
             json.dumps(

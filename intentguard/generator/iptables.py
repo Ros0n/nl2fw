@@ -55,38 +55,46 @@ class IptablesProgram:
         return [" ".join(cmd) for cmd in self.commands]
 
 
-def generate_iptables(policy: IRPolicy) -> IptablesProgram:
+def generate_iptables(
+    policy: IRPolicy,
+    *,
+    include_baseline: bool = False,
+    include_established_related: bool = False,
+) -> IptablesProgram:
     cmds: List[List[str]] = []
 
-    # Deterministic baseline: flush filter table + set default policies
-    cmds.extend(
-        [
-            ["iptables", "-t", "filter", "-F"],
-            ["iptables", "-t", "filter", "-X"],
-        ]
-    )
-
-    default = "DROP" if policy.default_policy == Action.deny else "ACCEPT"
-    for ch in ["INPUT", "OUTPUT", "FORWARD"]:
-        cmds.append(["iptables", "-t", "filter", "-P", ch, default])
-
-    # Always insert state accept rules at top (one per chain, deterministic)
-    for ch in ["INPUT", "OUTPUT", "FORWARD"]:
-        cmds.append(
+    # IMPORTANT SCOPE RULE:
+    # IntentGuard compiles *rules for the user intent*, not whole-firewall configuration.
+    # Baseline operations (flush/default policies/conntrack baseline) are opt-in for demos.
+    if include_baseline:
+        cmds.extend(
             [
-                "iptables",
-                "-t",
-                "filter",
-                "-A",
-                ch,
-                "-m",
-                "conntrack",
-                "--ctstate",
-                "ESTABLISHED,RELATED",
-                "-j",
-                "ACCEPT",
+                ["iptables", "-t", "filter", "-F"],
+                ["iptables", "-t", "filter", "-X"],
             ]
         )
+        default = "DROP" if policy.default_policy == Action.deny else "ACCEPT"
+        for ch in ["INPUT", "OUTPUT", "FORWARD"]:
+            cmds.append(["iptables", "-t", "filter", "-P", ch, default])
+
+    if include_established_related:
+        # Optional convenience rule (often installed by operators as baseline)
+        for ch in ["INPUT", "OUTPUT", "FORWARD"]:
+            cmds.append(
+                [
+                    "iptables",
+                    "-t",
+                    "filter",
+                    "-A",
+                    ch,
+                    "-m",
+                    "conntrack",
+                    "--ctstate",
+                    "ESTABLISHED,RELATED",
+                    "-j",
+                    "ACCEPT",
+                ]
+            )
 
     # Deterministic rule ordering: chain order then rule_id
     chain_buckets: Dict[Chain, List[IRRule]] = {"INPUT": [], "OUTPUT": [], "FORWARD": []}
@@ -129,4 +137,3 @@ def generate_iptables(policy: IRPolicy) -> IptablesProgram:
                         cmds.append(cmd + ["-j", target])
 
     return IptablesProgram(commands=cmds)
-
